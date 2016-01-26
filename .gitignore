@@ -19,3 +19,6 @@ project/plugins/project/
 # idea
 *.idea
 *.iml
+
+# twitter4j
+twitter4j.properties
