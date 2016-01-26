@@ -45,13 +45,12 @@ class processTweets extends FlatSpec with Matchers with BeforeAndAfter {
 
     TwitterUtils.createStream(ssc, twitterAuth, filters)
         .foreachRDD(tweet => {
-          tweet.collect().foreach(println)
-        })
+          tweet.foreach(println)
 
+        })
 
     ssc.start()
     ssc.awaitTermination()
-
 
   }
 }
