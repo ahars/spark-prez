@@ -74,6 +74,11 @@
             <artifactId>spark-streaming_${scala-dep.version}</artifactId>
             <version>${spark.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_${scala-dep.version}</artifactId>
+            <version>${scalatest.version}</version>
+        </dependency>
     </dependencies>
 
 </project>
