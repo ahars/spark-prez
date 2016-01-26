@@ -25,6 +25,7 @@
         <spark.version>1.6.0</spark.version>
         <spark-csv.version>1.3.0</spark-csv.version>
         <cybozu-langdetect.version>1.1-20120112</cybozu-langdetect.version>
+        <elasticsearch-spark.version>2.2.0-rc1</elasticsearch-spark.version>
     </properties>
 
     <build>
@@ -89,6 +90,11 @@
             <groupId>com.cybozu.labs</groupId>
             <artifactId>langdetect</artifactId>
             <version>${cybozu-langdetect.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch-spark_${scala-dep.version}</artifactId>
+            <version>${elasticsearch-spark.version}</version>
         </dependency>
     </dependencies>
 
