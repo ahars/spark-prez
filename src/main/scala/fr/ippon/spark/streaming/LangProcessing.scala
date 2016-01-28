@@ -8,10 +8,13 @@ import com.cybozu.labs.langdetect.DetectorFactory
 class LangProcessing extends Serializable {
 
   def detectLanguage(text: String): String = {
-    val detector = DetectorFactory.create()
-    detector.append(text)
-    detector.detect()
+    try {
+      val detector = DetectorFactory.create()
+      detector.append(text)
+      detector.detect()
+    } catch {
+      case e: Exception => "NA"
+    }
   }
 }
-
 
