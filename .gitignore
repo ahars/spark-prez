@@ -24,4 +24,4 @@ project/plugins/project/
 twitter4j.properties
 
 # data
-resources/data/tweet/*
+src/main/resources/data/tweet/*
