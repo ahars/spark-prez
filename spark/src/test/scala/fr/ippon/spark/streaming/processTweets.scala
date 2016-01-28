@@ -56,13 +56,14 @@ class processTweets extends FlatSpec with Matchers with BeforeAndAfter {
     // Choix des Hashtags à filtrer
     val filters: Array[String] = Array("#Android")
 
-    TwitterUtils.createStream(ssc, twitterAuth, filters)
-        .map(data => Tweet(data.getUser.getName(), data.getText(), df.format(data.getCreatedAt()), lang.detectLanguage((data.getText()))))
-        .map(tweet => Json.writes[Tweet].writes(tweet))
-        .foreachRDD(json => {
-          json.foreach(println)
-          EsSpark.saveJsonToEs(json, "spark/tweets")
-        })
+    TwitterUtils
+      .createStream(ssc, twitterAuth, filters)
+      .map(data => Tweet(data.getUser.getName(), data.getText(), df.format(data.getCreatedAt()), lang.detectLanguage((data.getText()))))
+      .map(tweet => Json.writes[Tweet].writes(tweet))
+      .foreachRDD(json => {
+        json.foreach(println)
+        EsSpark.saveJsonToEs(json, "spark/tweets")
+      })
 
     ssc.start()
     ssc.awaitTerminationOrTimeout(1000000)
@@ -74,30 +75,45 @@ class processTweets extends FlatSpec with Matchers with BeforeAndAfter {
       .show()
   }
 
-  "Collect of tweets with #Android" should "collect them from Twitter and store into files" in {
+  "Collect of live tweets with #Android" should "collect them from Twitter and store into files" in {
 
     // Twitter4J
     // IMPORTANT: ajuster vos clés d'API dans twitter4J.properties
     val twitterConf = ConfigurationContext.getInstance()
     val twitterAuth = Option(AuthorizationFactory.getInstance(twitterConf))
 
+    // Language Detection
+    DetectorFactory.loadProfile("src/main/resources/profiles")
+    val lang = new LangProcessing
+
+    // Formatage des dates
+    val df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+
     // Choix des Hashtags à filtrer
     val filters: Array[String] = Array("#Android")
 
-    TwitterUtils.createStream(ssc, twitterAuth, filters)
-      .foreachRDD(tweet => {
-        tweet.foreach(println)
-        tweet.saveAsTextFile("src/main/resources/data/tweet")
-      })
+    TwitterUtils
+      .createStream(ssc, twitterAuth, filters)
+      .map(data => Tweet(data.getUser.getName(), data.getText(), df.format(data.getCreatedAt()), lang.detectLanguage((data.getText()))))
+      .map(tweet => Json.writes[Tweet].writes(tweet))
+      .repartition(1)
+      .saveAsTextFiles("src/main/resources/data/tweet/part")
 
     ssc.start()
     ssc.awaitTerminationOrTimeout(1000000)
+  }
 
-    // Lecture des Tweets depuis le file system
-    sc
-      .textFile("src/main/resources/data/tweet")
-      .take(50)
-      .foreach(println)
+  "Offline processing of tweets with #Android" should "collect them from files, print and store into ElasticSearch" in {
+
+    ssc
+      .textFileStream("src/main/resources/data/tweet/processing")
+      .foreachRDD(json => {
+        json.foreach(println)
+        EsSpark.saveJsonToEs(json, "spark/tweets")
+      })
+
+    ssc.start()
+    ssc.awaitTerminationOrTimeout(10000)
 
   }
 
