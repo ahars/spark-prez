@@ -45,7 +45,7 @@ class processTrees extends FlatSpec with Matchers with BeforeAndAfter {
       .foreach(result => println(result._1 + " : " + result._2))
   }
 
-  "DataFrame - spark-csv : Comptage des abres de Paris par espèce" should "afficher les résultats" in {
+  "DataFrame - méthode 1 : Comptage des abres de Paris par espèce" should "afficher les résultats" in {
 
     val trees = sqlc.read
       .format("com.databricks.spark.csv").option("header", "true")
@@ -53,6 +53,7 @@ class processTrees extends FlatSpec with Matchers with BeforeAndAfter {
       .option("delimiter", ";")
       .load("src/main/resources/data/tree/arbresalignementparis2010.csv")
 
+    trees.printSchema()
     trees.show()
 
     trees
@@ -61,6 +62,31 @@ class processTrees extends FlatSpec with Matchers with BeforeAndAfter {
       .groupBy(trees("espece"))
       .count() // comptage des espèces
       .sort(trees("espece")) // tri sur la colonne des espèces
+      .show()
+  }
+
+  "DataFrame - méthode 2 : Comptage des abres de Paris par espèce" should "afficher les résultats" in {
+
+    val trees = sqlc.read
+      .format("com.databricks.spark.csv").option("header", "true")
+      .option("inferSchema", "true")
+      .option("delimiter", ";")
+      .load("src/main/resources/data/tree/arbresalignementparis2010.csv")
+
+    trees.printSchema()
+    trees.show()
+
+    // Enregistrement du DataFrame en tant que table temporaire
+    trees.registerTempTable("tree")
+
+    sqlc
+      .sql(
+        """SELECT espece, COUNT(*) as count
+          |FROM tree
+          |WHERE espece != ''
+          |GROUP BY espece
+          |ORDER BY espece
+        """.stripMargin)
       .show()
   }
 }
