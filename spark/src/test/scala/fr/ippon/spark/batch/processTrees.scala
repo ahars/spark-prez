@@ -25,15 +25,42 @@ class processTrees extends FlatSpec with Matchers with BeforeAndAfter {
     sc.stop()
   }
 
-  "RDD : Comptage des arbres de Paris par espèce" should "print results" in {
+  "RDD : Comptage des arbres de Paris par espèce" should "afficher les résultats" in {
 
-    sc
+    val trees = sc
       .textFile("src/main/resources/data/tree/arbresalignementparis2010.csv")
+
+    trees.take(20).foreach(println)
+
+    println
+    println("-------------------------------")
+    println
+
+    trees
       .filter(line => !line.startsWith("geom"))
       .map(line => line.split(";", -1))
       .map(fields => (fields(4), 1))
-      .reduceByKey(_+_)
-      .sortByKey()
-      .foreach(t => println(t._1 + " : " + t._2))
+      .reduceByKey(_+_)  // comptage des espèces
+      .sortByKey()  // tri sur la colonne des espèces
+      .foreach(result => println(result._1 + " : " + result._2))
+  }
+
+  "DataFrame - spark-csv : Comptage des abres de Paris par espèce" should "afficher les résultats" in {
+
+    val trees = sqlc.read
+      .format("com.databricks.spark.csv").option("header", "true")
+      .option("inferSchema", "true")
+      .option("delimiter", ";")
+      .load("src/main/resources/data/tree/arbresalignementparis2010.csv")
+
+    trees.show()
+
+    trees
+      .select(trees("espece"))
+      .where(trees("espece") !== "")
+      .groupBy(trees("espece"))
+      .count() // comptage des espèces
+      .sort(trees("espece")) // tri sur la colonne des espèces
+      .show()
   }
 }
