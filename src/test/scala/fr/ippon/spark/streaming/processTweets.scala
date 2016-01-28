@@ -39,7 +39,7 @@ class processTweets extends FlatSpec with Matchers with BeforeAndAfter {
     sc.stop()
   }
 
-  "Process Tweets with #Android" should "collect them from Twitter, print and store into ElasticSearch" in {
+  "Live processing of tweets with #Android" should "collect them from Twitter, print and store into ElasticSearch" in {
 
     // Twitter4J
     // IMPORTANT: ajuster vos clés d'API dans twitter4J.properties
@@ -73,4 +73,32 @@ class processTweets extends FlatSpec with Matchers with BeforeAndAfter {
       .load("spark/tweets")
       .show()
   }
+
+  "Collect of tweets with #Android" should "collect them from Twitter and store into files" in {
+
+    // Twitter4J
+    // IMPORTANT: ajuster vos clés d'API dans twitter4J.properties
+    val twitterConf = ConfigurationContext.getInstance()
+    val twitterAuth = Option(AuthorizationFactory.getInstance(twitterConf))
+
+    // Choix des Hashtags à filtrer
+    val filters: Array[String] = Array("#Android")
+
+    TwitterUtils.createStream(ssc, twitterAuth, filters)
+      .foreachRDD(tweet => {
+        tweet.foreach(println)
+        tweet.saveAsTextFile("src/main/resources/data/tweet")
+      })
+
+    ssc.start()
+    ssc.awaitTerminationOrTimeout(1000000)
+
+    // Lecture des Tweets depuis le file system
+    sc
+      .textFile("src/main/resources/data/tweet")
+      .take(50)
+      .foreach(println)
+
+  }
+
 }
