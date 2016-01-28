@@ -59,10 +59,10 @@ class processTweets extends FlatSpec with Matchers with BeforeAndAfter {
     TwitterUtils
       .createStream(ssc, twitterAuth, filters)
       .map(data => Tweet(data.getUser.getName(), data.getText(), df.format(data.getCreatedAt()), lang.detectLanguage((data.getText()))))
-      .map(tweet => Json.writes[Tweet].writes(tweet))
+      .map(tweet => Json.writes[Tweet].writes(tweet)) // formatage des Tweets
       .foreachRDD(json => {
-        json.foreach(println)
-        EsSpark.saveJsonToEs(json, "spark/tweets")
+        json.foreach(println) // affichage
+        EsSpark.saveJsonToEs(json, "spark/tweets") // stockage des tweets sur ElasticSearch
       })
 
     ssc.start()
