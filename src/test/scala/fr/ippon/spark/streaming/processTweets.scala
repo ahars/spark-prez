@@ -1,9 +1,14 @@
 package fr.ippon.spark.streaming
 
+import java.text.SimpleDateFormat
+
 import com.cybozu.labs.langdetect.DetectorFactory
+import org.apache.spark.sql.SQLContext
 import org.apache.spark.streaming.twitter.TwitterUtils
 import org.apache.spark.streaming.{Seconds, StreamingContext}
-import org.apache.spark.SparkConf
+import org.apache.spark.{SparkContext, SparkConf}
+import org.elasticsearch.spark.rdd.EsSpark
+import play.api.libs.json._
 import org.scalatest.{BeforeAndAfter, Matchers, FlatSpec}
 import twitter4j.auth.AuthorizationFactory
 import twitter4j.conf.ConfigurationContext
@@ -13,18 +18,25 @@ import twitter4j.conf.ConfigurationContext
   */
 class processTweets extends FlatSpec with Matchers with BeforeAndAfter {
 
+  private var sc: SparkContext = _
+  private var sqlc: SQLContext = _
   private var ssc: StreamingContext = _
 
   before {
     val sparkConf = new SparkConf()
       .setAppName("processTweets")
       .setMaster("local[*]")
+      .set("es.nodes", "localhost:9200")
+      .set("es.index.auto.create", "true")
 
-    ssc = new StreamingContext(sparkConf, Seconds(2))
+    sc = new SparkContext(sparkConf)
+    sqlc = new SQLContext(sc)
+    ssc = new StreamingContext(sc, Seconds(2))
   }
 
   after {
     ssc.stop()
+    sc.stop()
   }
 
   "Process Tweets with #Android" should "collect them from Twitter, print and store into ElasticSearch" in {
@@ -38,13 +50,27 @@ class processTweets extends FlatSpec with Matchers with BeforeAndAfter {
     DetectorFactory.loadProfile("src/main/resources/profiles")
     val lang = new LangProcessing
 
+    // Formatage des dates
+    val df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+
+    // Choix des Hashtags à filtrer
     val filters: Array[String] = Array("#Android")
 
     TwitterUtils.createStream(ssc, twitterAuth, filters)
-        .map(json => Tweet(json.getUser.getName(), json.getText(), json.getCreatedAt(), lang.detectLanguage((json.getText()))))
-        .foreachRDD(tweet => tweet.foreach(println))
+        .map(data => Tweet(data.getUser.getName(), data.getText(), df.format(data.getCreatedAt()), lang.detectLanguage((data.getText()))))
+        .map(tweet => Json.writes[Tweet].writes(tweet))
+        .foreachRDD(json => {
+          json.foreach(println)
+          EsSpark.saveJsonToEs(json, "spark/tweets")
+        })
 
     ssc.start()
-    ssc.awaitTermination()
+    ssc.awaitTerminationOrTimeout(1000000)
+
+    // Lecture des Tweets depuis ElasticSearch
+    sqlc
+      .read.format("org.elasticsearch.spark.sql")
+      .load("spark/tweets")
+      .show()
   }
 }
