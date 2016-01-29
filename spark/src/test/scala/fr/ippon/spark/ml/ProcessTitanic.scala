@@ -1,5 +1,7 @@
 package fr.ippon.spark.ml
 
+import org.apache.spark.ml.classification.RandomForestClassifier
+import org.apache.spark.ml.feature.StringIndexer
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SQLContext
 import org.scalatest.{BeforeAndAfter, Matchers, FlatSpec}
@@ -70,7 +72,27 @@ class ProcessTitanic extends FlatSpec with Matchers with BeforeAndAfter {
     println("----------------------------------------------")
     println
 
+    // Features Engineering
 
+    // Conversion de la colonne "Survived" en colonne numérique "Label" utilisée par l'algorithme de ML
+    val labelIndexModel = new StringIndexer()
+      .setInputCol("Survived")
+      .setOutputCol("label")
+      .fit(trainWithCorrectionsDf)
+
+    val trainWithLabelDf = labelIndexModel.transform(trainWithCorrectionsDf)
+
+    println
+    println("Jeu d'apprentissage")
+    trainWithLabelDf.show()
+
+    // Conversion de la colonne "Sex" en colonne numérique "Sex_indexed"
+    val sexIndexModel = new StringIndexer()
+      .setInputCol("Sex")
+      .setOutputCol("Sex_indexed")
+
+    // Instanciation de l'algorithme supervisé de ML des Random Forests implémenté dans Spark ML
+    val randomForestAlgo = new RandomForestClassifier()
 
   }
 
