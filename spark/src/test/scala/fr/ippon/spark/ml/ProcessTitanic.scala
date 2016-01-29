@@ -1,7 +1,8 @@
 package fr.ippon.spark.ml
 
+import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.RandomForestClassifier
-import org.apache.spark.ml.feature.StringIndexer
+import org.apache.spark.ml.feature.{VectorAssembler, StringIndexer}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SQLContext
 import org.scalatest.{BeforeAndAfter, Matchers, FlatSpec}
@@ -91,9 +92,25 @@ class ProcessTitanic extends FlatSpec with Matchers with BeforeAndAfter {
       .setInputCol("Sex")
       .setOutputCol("Sex_indexed")
 
+    //
+    val vectorizedFeaturesModel = new VectorAssembler()
+      .setInputCols(Array("Pclass", "Sex_indexed", "Age_cleaned"))
+      .setOutputCol("features")
+
     // Instanciation de l'algorithme supervisé de ML des Random Forests implémenté dans Spark ML
     val randomForestAlgo = new RandomForestClassifier()
 
+    println
+    println("----------------------------------------------")
+    println
+
+    // Pipeline Building
+    val pipeline = new Pipeline()
+      .setStages(Array(
+        sexIndexModel,
+        vectorizedFeaturesModel,
+        randomForestAlgo
+      ))
   }
 
 }
