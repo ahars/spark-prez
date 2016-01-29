@@ -25,8 +25,9 @@ class ProcessTitanic extends FlatSpec with Matchers with BeforeAndAfter {
     sc.stop()
   }
 
-  "" should "" in {
+  "ML - Apprentissage supervisé : Prédiction du nombre de survivants du Titanic" should "send results to ElasticSearch" in {
 
+    // Récupération des données
     val trainDf = Titanic.dataframeFromTitanicFile(sqlc, "src/main/resources/data/titanic/train.csv")
     val testDf = Titanic.dataframeFromTitanicFile(sqlc, "src/main/resources/data/titanic/test.csv")
     val expectedDf = Titanic.dataframeFromTitanicFile(sqlc, "src/main/resources/data/titanic/gendermodel.csv")
@@ -47,7 +48,30 @@ class ProcessTitanic extends FlatSpec with Matchers with BeforeAndAfter {
     println("----------------------------------------------")
     println
 
-    
+    // Data Cleansing
+
+    // Correction des valeurs erronées sur l'age des passagers
+    val meanAge = Titanic.calcMeanAge(trainDf, "Age")
+
+    println("Age moyen calculé : " + meanAge)
+
+    val trainWithCorrectionsDf = Titanic.fillMissingAge(trainDf, "Age", "Age_cleaned", meanAge)
+    val testWithCorrectionsDf = Titanic.fillMissingAge(testDf, "Age", "Age_cleaned", meanAge)
+
+    println
+    println("Jeu d'entrainement")
+    trainWithCorrectionsDf.show()
+
+    println
+    println("Jeu de test")
+    testWithCorrectionsDf.show()
+
+    println
+    println("----------------------------------------------")
+    println
+
+
+
   }
 
 }
