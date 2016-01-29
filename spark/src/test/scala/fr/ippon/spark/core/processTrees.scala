@@ -1,4 +1,4 @@
-package fr.ippon.spark.batch
+package fr.ippon.spark.core
 
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SQLContext
