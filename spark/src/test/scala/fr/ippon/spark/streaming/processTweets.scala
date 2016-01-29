@@ -62,7 +62,7 @@ class processTweets extends FlatSpec with Matchers with BeforeAndAfter {
       .map(tweet => Json.writes[Tweet].writes(tweet)) // formatage des Tweets
       .foreachRDD(json => {
         json.foreach(println) // affichage
-        EsSpark.saveJsonToEs(json, "spark/tweets") // stockage des tweets sur ElasticSearch
+        EsSpark.saveJsonToEs(json, "streaming/tweets") // stockage des tweets sur ElasticSearch
       })
 
     ssc.start()
