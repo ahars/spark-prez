@@ -27,9 +27,6 @@ object Titanic {
       case age: Double => age
       case _ => replacementValue
     }
-
     df.withColumn(outputCol, functions.callUDF(ageValue, DoubleType, df(inputCol)))
   }
-
-
 }

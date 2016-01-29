@@ -71,7 +71,7 @@ class processTweets extends FlatSpec with Matchers with BeforeAndAfter {
     // Lecture des Tweets depuis ElasticSearch
     sqlc.read
       .format("org.elasticsearch.spark.sql")
-      .load("spark/tweets")
+      .load("streaming/tweets")
       .show()
   }
 
@@ -109,7 +109,7 @@ class processTweets extends FlatSpec with Matchers with BeforeAndAfter {
       .textFileStream("src/main/resources/data/tweet/processing")
       .foreachRDD(json => {
         json.foreach(println)
-        EsSpark.saveJsonToEs(json, "spark/tweets")
+        EsSpark.saveJsonToEs(json, "streaming/tweets")
       })
 
     ssc.start()

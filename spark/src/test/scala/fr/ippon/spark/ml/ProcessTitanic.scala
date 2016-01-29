@@ -5,6 +5,7 @@ import org.apache.spark.ml.classification.{RandomForestClassificationModel, Rand
 import org.apache.spark.ml.feature.{VectorAssembler, StringIndexer}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SQLContext
+import org.elasticsearch.spark.sql.EsSparkSQL
 import org.scalatest.{BeforeAndAfter, Matchers, FlatSpec}
 
 /**
@@ -19,6 +20,8 @@ class ProcessTitanic extends FlatSpec with Matchers with BeforeAndAfter {
     val sparkConf = new SparkConf()
       .setAppName("processTitanic")
       .setMaster("local[*]")
+      .set("es.nodes", "localhost:9200")
+      .set("es.index.auto.create", "true")
 
     sc = new SparkContext(sparkConf)
     sqlc = new SQLContext(sc)
@@ -121,5 +124,26 @@ class ProcessTitanic extends FlatSpec with Matchers with BeforeAndAfter {
     println
     println("----------------------------------------------")
     println
+
+    // Test du model
+    val predictions = model.transform(testWithCorrectionsDf)
+
+    println("Application du Modèle de ML sur le jeu de test")
+    predictions.show()
+
+    println
+    println("Comparaison des prédictions avec les valeurs réelles")
+
+    val comparison = predictions
+      .join(expectedDf, "PassengerId")
+      .select("PassengerId", "Pclass", "Sex", "Age_cleaned", "prediction", "Survived")
+
+    // Affichage des prédictions par rapport au label
+    comparison.select("Survived", "prediction")
+      .groupBy("Survived", "prediction")
+      .count()
+      .show()
+
+    EsSparkSQL.saveToEs(comparison, "ml/comparisons")
   }
 }
