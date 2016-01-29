@@ -1,7 +1,7 @@
 package fr.ippon.spark.ml
 
-import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.classification.RandomForestClassifier
+import org.apache.spark.ml.{PipelineModel, Pipeline}
+import org.apache.spark.ml.classification.{RandomForestClassificationModel, RandomForestClassifier}
 import org.apache.spark.ml.feature.{VectorAssembler, StringIndexer}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SQLContext
@@ -111,6 +111,15 @@ class ProcessTitanic extends FlatSpec with Matchers with BeforeAndAfter {
         vectorizedFeaturesModel,
         randomForestAlgo
       ))
-  }
 
+    // Training of the Model
+    val model = pipeline.fit(trainWithLabelDf)
+
+    println("Le Modèle de ML généré par l'algorithme des Random Forests")
+    println(model.asInstanceOf[PipelineModel].stages(2).asInstanceOf[RandomForestClassificationModel].toDebugString)
+
+    println
+    println("----------------------------------------------")
+    println
+  }
 }
