@@ -48,7 +48,8 @@ class processTrees extends FlatSpec with Matchers with BeforeAndAfter {
   "DataFrame - méthode 1 : Comptage des abres de Paris par espèce" should "afficher les résultats" in {
 
     val trees = sqlc.read
-      .format("com.databricks.spark.csv").option("header", "true")
+      .format("com.databricks.spark.csv")
+      .option("header", "true")
       .option("inferSchema", "true")
       .option("delimiter", ";")
       .load("src/main/resources/data/tree/arbresalignementparis2010.csv")
@@ -68,7 +69,8 @@ class processTrees extends FlatSpec with Matchers with BeforeAndAfter {
   "DataFrame - méthode 2 : Comptage des abres de Paris par espèce" should "afficher les résultats" in {
 
     val trees = sqlc.read
-      .format("com.databricks.spark.csv").option("header", "true")
+      .format("com.databricks.spark.csv")
+      .option("header", "true")
       .option("inferSchema", "true")
       .option("delimiter", ";")
       .load("src/main/resources/data/tree/arbresalignementparis2010.csv")

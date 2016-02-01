@@ -51,6 +51,10 @@ class ProcessTitanic extends FlatSpec with Matchers with BeforeAndAfter {
     expectedDf.show()
 
     println
+    println("Jeu d'entrainement : " + trainDf.count() + " passagers")
+    println("Jeu de test : " + testDf.count() + " passagers")
+
+    println
     println("----------------------------------------------")
     println
 
@@ -65,11 +69,11 @@ class ProcessTitanic extends FlatSpec with Matchers with BeforeAndAfter {
     val testWithCorrectionsDf = Titanic.fillMissingAge(testDf, "Age", "Age_cleaned", meanAge)
 
     println
-    println("Jeu d'entrainement")
+    println("Jeu d'entrainement avec l'âge corrigé")
     trainWithCorrectionsDf.show()
 
     println
-    println("Jeu de test")
+    println("Jeu de test avec l'âge corrigé")
     testWithCorrectionsDf.show()
 
     println
@@ -95,7 +99,7 @@ class ProcessTitanic extends FlatSpec with Matchers with BeforeAndAfter {
       .setInputCol("Sex")
       .setOutputCol("Sex_indexed")
 
-    //
+    // Assemblage des Features dans un tableau
     val vectorizedFeaturesModel = new VectorAssembler()
       .setInputCols(Array("Pclass", "Sex_indexed", "Age_cleaned"))
       .setOutputCol("features")
