@@ -27,10 +27,11 @@ class processTrees extends FlatSpec with Matchers with BeforeAndAfter {
 
   "RDD : Comptage des arbres de Paris par espèce" should "afficher les résultats" in {
 
-    val trees = sc
-      .textFile("src/main/resources/data/tree/arbresalignementparis2010.csv")
+    val trees = sc.textFile("src/main/resources/data/tree/arbresalignementparis2010.csv")
 
-    trees.take(20).foreach(println)
+    trees
+      .take(20)
+      .foreach(println)
 
     println
     println("-------------------------------")
