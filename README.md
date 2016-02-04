@@ -49,6 +49,8 @@ $ ./elastic/print_tweets_dashboard.sh
 ```
 to use your web browser
 
+You need to add connection id obtained from the Twitter developper API in the conf file ```spark/src/main/resources/twitter4j.properties```
+
 This project contains a way to collect tweets in files to process them when you can't get an access to Internet..
 
 ### Titanic survivors prediction
