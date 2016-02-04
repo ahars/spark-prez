@@ -113,8 +113,13 @@ class processTweets extends FlatSpec with Matchers with BeforeAndAfter {
       })
 
     ssc.start()
-    ssc.awaitTerminationOrTimeout(10000)
+    ssc.awaitTerminationOrTimeout(100000)
 
+    // Lecture des Tweets depuis ElasticSearch
+    sqlc.read
+      .format("org.elasticsearch.spark.sql")
+      .load("streaming/tweets")
+      .show()
   }
 
 }
