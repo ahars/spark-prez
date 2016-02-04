@@ -33,13 +33,13 @@ $ ./elastic/create_index.sh
 
 ### Trees processing in RDD & DataFrames
 
-- input : trees of Paris (.csv; open data)
-- process : count * group by espece
+- input : trees of Paris (open data file)
+- process : "count * group by espece"
 - output : console
 
 ### Tweets processing with Spark Streaming
 
-- input : Tweets with hashtag "Android" with Twitter4J
+- input : Tweets with hashtag "Android" (with Twitter4J)
 - process : Language detection on the tweet
 - output : indexing in ElasticSearch and visualization on Kibana
 
@@ -53,7 +53,7 @@ This project contains a way to collect tweets in files to process them when you 
 
 ### Titanic survivors prediction
 
-- input : some passengers of the Titanic
+- input : some passengers of the Titanic (files available on Kaggle)
 - process : predictions about the survivors (Random Forests algorithm)
 - output : indexing in ElasticSearch and visualization on Kibana
 
